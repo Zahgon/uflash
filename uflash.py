@@ -339,27 +339,7 @@ def unhexlify(blob):
     Although this function is no longer used in the uflash cli commands,
     it is called by extract_script, which is maintained for Mu access.
     """
-    lines = blob.split("\n")[1:]
-    output = []
-    for line in lines:
-        # Discard the address, length etc. and reverse the hexlification
-        output.append(binascii.unhexlify(line[9:-2]))
-    # Check the header is correct ("MP<size>")
-    if output[0][0:2].decode("utf-8") != u"MP":
-        return ""
-    # Strip off header
-    output[0] = output[0][4:]
-    # and strip any null bytes from the end
-    output[-1] = output[-1].strip(b"\x00")
-    script = b"".join(output)
-    try:
-        result = script.decode("utf-8")
-        return result
-    except UnicodeDecodeError:
-        # Return an empty string because in certain rare circumstances (where
-        # the source hex doesn't include any embedded Python code) this
-        # function may be passed in "raw" bytes from MicroPython.
-        return ""
+    pass
 
 
 def extract_script(embedded_hex):
@@ -371,37 +351,7 @@ def extract_script(embedded_hex):
     IMPORTANT!
     Although this function is no longer used, it is maintained here for Mu.
     """
-    hex_lines = embedded_hex.split("\n")
-    script_addr_high = hex((_SCRIPT_ADDR >> 16) & 0xFFFF)[2:].upper().zfill(4)
-    script_addr_low = hex(_SCRIPT_ADDR & 0xFFFF)[2:].upper().zfill(4)
-    start_script = None
-    within_range = False
-    # Look for the script start address
-    for loc, val in enumerate(hex_lines):
-        if val[0:9] == ":02000004":
-            # Reached an extended address record, check if within script range
-            within_range = val[9:13].upper() == script_addr_high
-        elif (
-            within_range
-            and val[0:3] == ":10"
-            and val[3:7].upper() == script_addr_low
-        ):
-            start_script = loc
-            break
-    if start_script:
-        # Find the end of the script
-        end_script = None
-        for loc, val in enumerate(hex_lines[start_script:]):
-            if val[9:41] == "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF":
-                end_script = loc + start_script
-                break
-        # Pass the extracted hex through unhexlify
-        return unhexlify(
-            "\n".join(
-                hex_lines[start_script - 1 : end_script if end_script else -6]
-            )
-        )
-    return ""
+    pass
 
 
 def find_microbit():
@@ -598,48 +548,7 @@ def py2hex(argv=None):
 
     Exceptions are caught and printed for the user.
     """
-    if not argv:  # pragma: no cover
-        argv = sys.argv[1:]
-
-    parser = argparse.ArgumentParser(description=_PY2HEX_HELP_TEXT)
-    parser.add_argument("source", nargs="*", default=None)
-    parser.add_argument(
-        "-r",
-        "--runtime",
-        default=None,
-        help="This feature has been deprecated.",
-    )
-    parser.add_argument(
-        "-o", "--outdir", default=None, help="Output directory"
-    )
-    parser.add_argument(
-        "-m",
-        "--minify",
-        action="store_true",
-        help="This feature has been deprecated.",
-    )
-    parser.add_argument(
-        "--version", action="version", version="%(prog)s " + get_version()
-    )
-    args = parser.parse_args(argv)
-
-    if args.runtime:
-        raise NotImplementedError("The 'runtime' flag is no longer supported.")
-    if args.minify:
-        print(
-            "The 'minify' flag is no longer supported, ignoring.",
-            file=sys.stderr,
-        )
-
-    for py_file in args.source:
-        if not args.outdir:
-            (script_path, script_name) = os.path.split(py_file)
-            args.outdir = script_path
-        flash(
-            path_to_python=py_file,
-            paths_to_microbits=[args.outdir],
-            keepname=True,
-        )  # keepname is always True in py2hex
+    pass
 
 
 def main(argv=None):
